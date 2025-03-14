@@ -30,8 +30,8 @@ from app.utils import generate_new_account_email, send_email
 router = APIRouter(prefix="/users", tags=["users"])
 
 user_creation_counter = Counter(
-    'user_creation_requests_total',  # Имя метрики
-    'Total number of user creation requests'  # Описание метрики
+    "user_creation_requests_total",  # Имя метрики
+    "Total number of user creation requests",  # Описание метрики
 )
 
 
@@ -67,7 +67,7 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
             status_code=400,
             detail="The user with this email already exists in the system.",
         )
-    
+
     user = crud.create_user(session=session, user_create=user_in)
     user_creation_counter.inc()
     if settings.emails_enabled and user_in.email:

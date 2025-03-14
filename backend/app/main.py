@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-import logging
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
@@ -43,11 +42,11 @@ instrumentator = Instrumentator()
 instrumentator.instrument(app).expose(app)
 
 # Set all CORS enabled origins
-#allow_origins=settings.all_cors_origins
+# allow_origins=settings.all_cors_origins
 if settings.all_cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=['*'],
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
