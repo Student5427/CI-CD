@@ -1,13 +1,13 @@
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from starlette.middleware.cors import CORSMiddleware
-from prometheus_fastapi_instrumentator import Instrumentator
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from prometheus_fastapi_instrumentator import Instrumentator
+from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings

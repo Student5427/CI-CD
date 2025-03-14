@@ -1,8 +1,8 @@
 import uuid
 from typing import Any
 
-from prometheus_client import Counter
 from fastapi import APIRouter, Depends, HTTPException
+from prometheus_client import Counter
 from sqlmodel import col, delete, func, select
 
 from app import crud
