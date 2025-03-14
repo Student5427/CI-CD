@@ -5,6 +5,14 @@ description = ""
 requires-python = ">=3.10,<4.0"
 dependencies = [
     "fastapi[standard]<1.0.0,>=0.114.2",
+    "prometheus-fastapi-instrumentator",
+    "prometheus-client",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-instrumentation-fastapi",
+    "opentelemetry-exporter-otlp",
+    "loki",
+    "logging",
     "python-multipart<1.0.0,>=0.0.7",
     "email-validator<3.0.0.0,>=2.1.0.post1",
     "passlib[bcrypt]<2.0.0,>=1.7.4",

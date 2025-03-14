@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, delete, func, select
+from prometheus_client import Counter
 
 from app import crud
 from app.api.deps import (
@@ -27,6 +28,11 @@ from app.models import (
 from app.utils import generate_new_account_email, send_email
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+user_creation_counter = Counter(
+    'user_creation_requests_total',  # Имя метрики
+    'Total number of user creation requests'  # Описание метрики
+)
 
 
 @router.get(
@@ -61,8 +67,9 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
             status_code=400,
             detail="The user with this email already exists in the system.",
         )
-
+    
     user = crud.create_user(session=session, user_create=user_in)
+    user_creation_counter.inc()
     if settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
             email_to=user_in.email, username=user_in.email, password=user_in.password

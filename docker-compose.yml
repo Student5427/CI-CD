@@ -162,8 +162,90 @@ services:
 
       # Enable redirection for HTTP and HTTPS
       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    container_name: prometheus
+    restart: unless-stopped
+    networks:
+      - traefik-public
+
+  grafana:
+    image: grafana/grafana
+    user: root
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+    networks:
+      - traefik-public
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    container_name: node-exporter
+    restart: unless-stopped
+    networks:
+      - traefik-public
+  
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/config:/etc/loki
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    restart: unless-stopped
+    networks:
+      - traefik-public
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./promtail/config:/etc/promtail
+      - /var/log:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
+    container_name: promtail
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    restart: unless-stopped
+    networks:
+      - traefik-public
+      - default
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - "3200:3200"  # Порт для HTTP API Tempo
+    volumes:
+      - ./tempo/config.yaml:/etc/tempo/config.yaml  # Путь к конфигурационному файлу
+      - ./tempo/data:/etc/tempo/data  # Обновите путь здесь
+    command:
+      - -config.file=/etc/tempo/config.yaml
+    restart: unless-stopped
+    networks:
+      - traefik-public
+
+
+
 volumes:
   app-db-data:
+  prometheus_data: {}
+  grafana_data: {}
+  loki_data: {}
+  tempo-data: {}
+
 
 networks:
   traefik-public:
