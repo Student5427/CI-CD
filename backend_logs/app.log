@@ -1,0 +1,31 @@
+{"asctime": "14:50:12.123", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "14:52:45.456", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "14:55:30.789", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:00:01.234", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:03:15.678", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "15:07:22.901", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:10:33.456", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:12:44.789", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "15:15:55.012", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:18:10.345", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:20:25.678", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "15:22:40.901", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:25:55.234", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:28:10.567", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "15:30:25.890", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:32:41.123", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:35:56.456", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "15:38:11.789", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:40:27.012", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:42:42.345", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "15:45:57.678", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:48:12.901", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:50:28.234", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "15:52:43.567", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "15:55:58.890", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "15:58:14.123", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "16:00:29.456", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "16:02:44.789", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}
+{"asctime": "16:05:00.012", "name": "backend", "levelname": "ERROR", "message": "Пользователь с данным логином уже существует"}
+{"asctime": "16:07:15.345", "name": "backend", "levelname": "INFO", "message": "Просмотр списка пользователей"}
+{"asctime": "16:09:30.678", "name": "backend", "levelname": "INFO", "message": "Пользователь создан"}

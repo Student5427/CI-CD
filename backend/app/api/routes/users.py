@@ -1,5 +1,7 @@
 import uuid
 from typing import Any
+from logger_config import logger
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from prometheus_client import Counter
@@ -27,12 +29,19 @@ from app.models import (
 )
 from app.utils import generate_new_account_email, send_email
 
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode
+
+
 router = APIRouter(prefix="/users", tags=["users"])
+
+tracer = trace.get_tracer(__name__)
 
 user_creation_counter = Counter(
     "user_creation_requests_total",  # Имя метрики
     "Total number of user creation requests",  # Описание метрики
 )
+
 
 
 @router.get(
@@ -42,16 +51,53 @@ user_creation_counter = Counter(
 )
 def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
-    Retrieve users.
+    Retrieve users with tracing.
     """
-
-    count_statement = select(func.count()).select_from(User)
-    count = session.exec(count_statement).one()
-
-    statement = select(User).offset(skip).limit(limit)
-    users = session.exec(statement).all()
-
-    return UsersPublic(data=users, count=count)
+    with tracer.start_as_current_span("read_users_operation") as outer_span:
+        try:
+            # Устанавливаем атрибуты для основного span
+            outer_span.set_attributes({
+                "skip": skip,
+                "limit": limit,
+                "operation": "list_users"
+            })
+            
+            # Span для подсчета общего количества пользователей
+            with tracer.start_as_current_span("count_users") as count_span:
+                count_statement = select(func.count()).select_from(User)
+                count = session.exec(count_statement).one()
+                count_span.set_attribute("total_users", count)
+            
+            # Span для получения списка пользователей
+            with tracer.start_as_current_span("fetch_users") as fetch_span:
+                statement = select(User).offset(skip).limit(limit)
+                users = session.exec(statement).all()
+                fetch_span.set_attribute("users_fetched", len(users))
+                
+                # Логирование
+                now = datetime.now()
+                formatted_time = now.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                with open('/var/log/backend/app.log', 'a') as f:
+                    f.write(f'{{"asctime": "{formatted_time}", "name": "backend", "levelname": "INFO", "message": "Успешное чтение списка пользователей"}}\n')
+                
+                logger.info("Успешное чтение списка пользователей")
+                outer_span.add_event("users_fetched", {
+                    "count": len(users),
+                    "skip": skip,
+                    "limit": limit
+                })
+            
+            return UsersPublic(data=users, count=count)
+            
+        except Exception as e:
+            # Обработка ошибок с записью в трейс
+            outer_span.set_status(Status(StatusCode.ERROR))
+            outer_span.record_exception(e)
+            logger.error(f"Ошибка при чтении пользователей: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail={"type": "error", "message": "Internal server error"}
+            )
 
 
 @router.post(
@@ -59,27 +105,53 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
 )
 def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
     """
-    Create new user.
+    Create new user with tracing.
     """
-    user = crud.get_user_by_email(session=session, email=user_in.email)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this email already exists in the system.",
-        )
+    with tracer.start_as_current_span("create_user_operation") as outer_span:
+        try:
+            # Вложенный span для проверки пользователя
+            with tracer.start_as_current_span("check_existing_user") as check_span:
+                user = crud.get_user_by_email(session=session, email=user_in.email)
+                check_span.set_attribute("user.email", user_in.email)
+                
+                if user:
+                    error_msg = f"Пользователь с данным логином уже существует"
+                    logger.error(error_msg)
+                    outer_span.set_status(Status(StatusCode.ERROR))
+                    outer_span.record_exception(ValueError(error_msg))
+                    raise HTTPException(
+                        status_code=400,
+                        detail={"type":"error", "message": "The user with this email already exists in the system."}
+                    )
 
-    user = crud.create_user(session=session, user_create=user_in)
-    user_creation_counter.inc()
-    if settings.emails_enabled and user_in.email:
-        email_data = generate_new_account_email(
-            email_to=user_in.email, username=user_in.email, password=user_in.password
-        )
-        send_email(
-            email_to=user_in.email,
-            subject=email_data.subject,
-            html_content=email_data.html_content,
-        )
-    return user
+            # Вложенный span для создания пользователя
+            with tracer.start_as_current_span("create_user_in_db") as create_span:
+                user = crud.create_user(session=session, user_create=user_in)
+                create_span.set_attribute("user.id", str(user.id))
+                logger.info(f"Пользователь создан")
+                user_creation_counter.inc()
+
+            # Вложенный span для отправки email
+            if settings.emails_enabled and user_in.email:
+                with tracer.start_as_current_span("send_welcome_email") as email_span:
+                    email_data = generate_new_account_email(
+                        email_to=user_in.email, 
+                        username=user_in.email, 
+                        password=user_in.password
+                    )
+                    send_email(
+                        email_to=user_in.email,
+                        subject=email_data.subject,
+                        html_content=email_data.html_content,
+                    )
+                    email_span.set_attribute("email.sent", True)
+            
+            return user
+
+        except Exception as e:
+            outer_span.set_status(Status(StatusCode.ERROR))
+            outer_span.record_exception(e)
+            raise
 
 
 @router.patch("/me", response_model=UserPublic)

@@ -1,0 +1,4 @@
+- targets: [localhost]
+  labels:
+    job: backend
+    __path__: /var/log/backend/app.log

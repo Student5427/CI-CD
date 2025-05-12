@@ -1,18 +1,20 @@
-auth_enabled: false
-
 server:
   http_listen_port: 3200
-  grpc_listen_port: 9095
+  grpc_listen_address: 0.0.0.0  # Добавьте эту строку
 
 distributor:
   receivers:
     otlp:
       protocols:
-        grpc: {}
-        http: {}
+        grpc:
+          endpoint: 0.0.0.0:4317  # Явное указание адреса
+        http:
+          endpoint: 0.0.0.0:4318  # Явное указание адреса
 
 storage:
   trace:
     backend: local
     local:
-      path: /etc/tempo/data  # Убедитесь, что этот путь доступен в контейнере.
+      path: /tmp/tempo
+    wal:
+      path: /tmp/tempo/wal

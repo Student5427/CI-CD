@@ -78,6 +78,8 @@ services:
   backend:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     restart: always
+    volumes:
+      - ./backend_logs:/var/log/backend  # Директория на хосте
     networks:
       - traefik-public
       - default
@@ -117,6 +119,7 @@ services:
     build:
       context: ./backend
     labels:
+      - logging = promtail
       - traefik.enable=true
       - traefik.docker.network=traefik-public
       - traefik.constraint-label=traefik-public
@@ -211,12 +214,13 @@ services:
     restart: unless-stopped
     networks:
       - traefik-public
+      - default
 
   promtail:
     image: grafana/promtail:latest
     volumes:
       - ./promtail/config:/etc/promtail
-      - /var/log:/var/log
+      - ./backend_logs:/var/log/backend  # Та же папка
       - /var/run/docker.sock:/var/run/docker.sock
     container_name: promtail
     command: -config.file=/etc/promtail/promtail-config.yaml
@@ -224,18 +228,32 @@ services:
     networks:
       - traefik-public
       - default
-  tempo:
-    image: grafana/tempo:latest
-    ports:
-      - "3200:3200"  # Порт для HTTP API Tempo
-    volumes:
-      - ./tempo/config.yaml:/etc/tempo/config.yaml  # Путь к конфигурационному файлу
-      - ./tempo/data:/etc/tempo/data  # Обновите путь здесь
-    command:
-      - -config.file=/etc/tempo/config.yaml
-    restart: unless-stopped
+  jaeger:
+    image: jaegertracing/all-in-one:latest
     networks:
       - traefik-public
+      - default
+    ports:
+      - "16686:16686"  # Web UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"  # Включаем прием OTLP
+  #tempo:
+  #  image: grafana/tempo:latest
+  #  ports:
+  #    - "3200:3200"  # Порт для HTTP API Tempo
+  #    - "4317:4317"  # OTLP gRPC
+  #    - "4318:4318"  # OTLP HTTP
+  #  volumes:
+  #    - ./tempo/config.yaml:/etc/tempo/config.yaml  # Путь к конфигурационному файлу
+  #    - ./tempo/data://tmp/tempo  # Обновите путь здесь
+  #  command:
+  #    - -config.file=/etc/tempo/config.yaml
+  #  restart: unless-stopped
+  #  networks:
+  #    - traefik-public
+  #    - default
 
 
 
