@@ -16,7 +16,6 @@ dependencies = [
     "loki",
     "pythonjsonlogger",
     "logging",
-    "loggin-loki",
     "pathlib",
     "python-multipart<1.0.0,>=0.0.7",
     "email-validator<3.0.0.0,>=2.1.0.post1",
